@@ -72,8 +72,9 @@ class HailuoAITTSConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     data_schema = vol.Schema({
         vol.Required(CONF_GROUP_ID): cv.string,
         vol.Required(CONF_API_KEY): cv.string,
-        vol.Required(CONF_MODEL): vol.In(MODELS),
+        vol.Required(CONF_LANGUAGE, default=DEFAULT_LANGUAGE): vol.In(LANGUAGES),
         vol.Required(CONF_VOICE): vol.In(VOICES),
+        vol.Required(CONF_MODEL): vol.In(MODELS),
         vol.Required(CONF_SPEED, default=DEFAULT_SPEED): vol.All(
             vol.Coerce(float),
             vol.Range(min=0.5, max=2.0)
@@ -86,7 +87,6 @@ class HailuoAITTSConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Coerce(int),
             vol.Range(min=-12, max=12)
         ),
-        vol.Required(CONF_LANGUAGE, default=DEFAULT_LANGUAGE): vol.In(LANGUAGES),
         vol.Optional(CONF_EMOTION): vol.In(EMOTIONS),
         vol.Required(CONF_ENGLISH_NORMALIZATION, default=DEFAULT_ENGLISH_NORMALIZATION): cv.boolean,
     })
@@ -106,16 +106,14 @@ class HailuoAITTSConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
 
-                # Store display names
                 user_input[CONF_MODEL_NAME] = MODELS[user_input[CONF_MODEL]]
                 user_input[CONF_VOICE_NAME] = VOICES[user_input[CONF_VOICE]]
                 user_input[CONF_LANGUAGE_NAME] = LANGUAGES[user_input[CONF_LANGUAGE]]
                 
-                # Store emotion name if emotion is selected
                 if CONF_EMOTION in user_input and user_input[CONF_EMOTION]:
                     user_input[CONF_EMOTION_NAME] = EMOTIONS[user_input[CONF_EMOTION]]
                 else:
-                    user_input[CONF_EMOTION_NAME] = EMOTIONS[""]  # Store "None" as the display name
+                    user_input[CONF_EMOTION_NAME] = EMOTIONS[""]
 
                 return self.async_create_entry(
                     title=f"Hailuo AI TTS ({user_input[CONF_LANGUAGE_NAME]}, {user_input[CONF_VOICE_NAME]}, {user_input[CONF_MODEL_NAME]})",
