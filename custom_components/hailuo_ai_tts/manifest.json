@@ -1,0 +1,17 @@
+{
+  "domain": "hailuo_ai_tts",
+  "name": "Hailuo-AI TTS",
+  "codeowners": [
+    "@thematrixdev"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/thematrixdev/home-assistant-hailuo-ai-tts/",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/thematrixdev/home-assistant-hailuo-ai-tts/issues",
+  "requirements": [
+    "requests>=2.25.1",
+    "pydub>=0.25.1"
+  ],
+  "version": "2.0.0"
+}

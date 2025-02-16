@@ -1,0 +1,28 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Hailuo AI TTS",
+                "description": "Set up Hailuo AI TTS integration",
+                "data": {
+                    "group_id": "Group ID",
+                    "api_key": "API Key",
+                    "model": "Model",
+                    "speed": "Speed",
+                    "vol": "Volume",
+                    "pitch": "Pitch",
+                    "voice": "Voice",
+                    "emotion": "Emotion",
+                    "english_normalization": "English Normalization",
+                    "language": "Language"
+                }
+            }
+        },
+        "error": {
+            "base": "{error_msg}"
+        },
+        "abort": {
+            "already_configured": "Device is already configured"
+        }
+    }
+}
