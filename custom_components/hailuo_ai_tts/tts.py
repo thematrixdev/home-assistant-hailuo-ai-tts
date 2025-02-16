@@ -4,7 +4,6 @@ Setting up TTS entity.
 import logging
 import binascii
 import asyncio
-from homeassistant.helpers.issue_registry import IssueSeverity, async_create_issue
 from typing import Any
 from homeassistant.components.tts import DOMAIN as TTS_DOMAIN
 from homeassistant.components.tts import (
@@ -169,17 +168,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
                 audio_format = response_json["extra_info"]["audio_format"]
                 audio_data = binascii.unhexlify(response_json["data"]["audio"])
         except Exception as err:
-            _LOGGER.error(str(err))
-
-            async_create_issue(
-                self.hass,
-                DOMAIN,
-                str(err),
-                is_fixable=False,
-                is_persistent=True,
-                severity=IssueSeverity.WARNING,
-            )
-            
+            _LOGGER.error(str(err))            
             return (None, None)
 
         return (audio_format, audio_data)
