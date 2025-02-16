@@ -3,7 +3,7 @@ Setting up TTS entity.
 """
 import logging
 import binascii
-import asyncio
+import requests
 from typing import Any
 from homeassistant.components.tts import DOMAIN as TTS_DOMAIN
 from homeassistant.components.tts import (
@@ -11,7 +11,6 @@ from homeassistant.components.tts import (
     TtsAudioType,
     Voice,
 )
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -31,11 +30,8 @@ from .const import (
     CONF_EMOTION_NAME,
     CONF_LANGUAGE_NAME,
     CONF_GROUP_ID,
-    DOMAIN,
-    LANGUAGE_CODES,
     LANGUAGE_MAPPINGS,
     get_language_api_value,
-    get_language_display_name,
     DEFAULT_LANGUAGE,
     TTS_VOICES,
 )
@@ -109,15 +105,11 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         """Return name of entity."""
         return f"Hailuo AI TTS ({self._language_name}, {self._voice_name}, {self._model_name})"
 
-    async def async_get_tts_audio(
-        self, message: str, language: str, options: dict[str, Any]
-    ) -> TtsAudioType:
-        """Convert a given text to speech and return it as bytes."""
+    def get_tts_audio(self, message: str, language: str, options: dict[str, Any]) -> TtsAudioType:
         headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self._api_key}"
         }
-
         data = {
             "text": message,
             "model": self._model,
@@ -129,46 +121,31 @@ class HailuoAITTSEntity(TextToSpeechEntity):
             },
             "language_boost": get_language_api_value(language or self._language),
         }
-
         if self._emotion:
             data["emotion"] = self._emotion
-
         if self._english_normalization:
             data["english_normalization"] = self._english_normalization
 
         endpoint = f"https://api.minimaxi.chat/v1/t2a_v2?GroupId={self.group_id}"
-        
         _LOGGER.debug("Request endpoint: %s", endpoint)
         _LOGGER.debug("Request header: %s", headers)
         _LOGGER.debug("Request data: %s", data)
 
-        websession = async_get_clientsession(self.hass)
-        try:
-            async with websession.post(
-                endpoint,
-                headers=headers,
-                json=data,
-            ) as response:
-                _LOGGER.debug("Response headers: %s", response.headers)
+        response = requests.post(endpoint, headers=headers, json=data, timeout=30)
+        response.raise_for_status()
+        response_json = response.json()
+        _LOGGER.debug("API Response: %s", {
+            **response_json,
+            "data": {
+                **response_json.get("data", {}),
+                "audio": "[REDACTED]" if "audio" in response_json.get("data", {}) else None
+            }
+        })
 
-                response.raise_for_status()
-                response_json = await response.json()
+        if response_json["base_resp"]["status_code"] != 0:
+            raise RuntimeError(response_json['base_resp']['status_msg'])
 
-                _LOGGER.debug("API Response: %s", {
-                    **response_json,
-                    "data": {
-                        **response_json.get("data", {}),
-                        "audio": "[REDACTED]" if "audio" in response_json.get("data", {}) else None
-                    }
-                })
+        audio_format = response_json["extra_info"]["audio_format"]
+        audio_data = binascii.unhexlify(response_json["data"]["audio"])
+        return (audio_format, audio_data)
 
-                if response_json["base_resp"]["status_code"] != 0:
-                    raise RuntimeError(response_json['base_resp']['status_msg'])
-
-                audio_format = response_json["extra_info"]["audio_format"]
-                audio_data = binascii.unhexlify(response_json["data"]["audio"])
-
-                return (audio_format, audio_data)
-        except Exception as err:
-            _LOGGER.error(str(err))            
-            return (None, None)
