@@ -87,6 +87,7 @@ class HailuoAITTSConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Coerce(int),
             vol.Range(min=-12, max=12)
         ),
+
         vol.Optional(CONF_EMOTION): vol.In(EMOTIONS),
         vol.Required(CONF_ENGLISH_NORMALIZATION, default=DEFAULT_ENGLISH_NORMALIZATION): cv.boolean,
     })

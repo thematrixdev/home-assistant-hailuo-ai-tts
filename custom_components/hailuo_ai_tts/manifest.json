@@ -7,11 +7,8 @@
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/thematrixdev/home-assistant-hailuo-ai-tts/",
+  "integration_type": "service",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/thematrixdev/home-assistant-hailuo-ai-tts/issues",
-  "requirements": [
-    "requests>=2.25.1",
-    "pydub>=0.25.1"
-  ],
-  "version": "2.0.0"
+  "version": "1.0.0"
 }
