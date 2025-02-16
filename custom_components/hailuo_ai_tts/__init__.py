@@ -1,15 +1,35 @@
-"""Custom integration for Hailuo-AI TTS."""
+"""The Hailuo AI TTS integration."""
 from __future__ import annotations
 
-from homeassistant.const import Platform
+import json
+from pathlib import Path
+import aiofiles
+import voluptuous as vol
+
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
-PLATFORMS: list[str] = [Platform.TTS]
+from .const import DOMAIN
+
+PLATFORMS = [Platform.TTS]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up entities."""
+    """Set up Hailuo AI TTS from a config entry."""
+    hass.data.setdefault(DOMAIN, {})
+
+    # Load translations from strings.json
+    strings_path = Path(__file__).parent / "strings.json"
+    try:
+        async with aiofiles.open(strings_path, mode='r', encoding="utf-8") as f:
+            content = await f.read()
+            strings = json.loads(content)
+            hass.data[DOMAIN]["languages"] = strings.get("languages", {})
+            hass.data[DOMAIN]["voices"] = strings.get("voices", {})
+    except (FileNotFoundError, json.JSONDecodeError):
+        hass.data[DOMAIN]["languages"] = {}
+        hass.data[DOMAIN]["voices"] = {}
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
@@ -17,6 +37,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        hass.data[DOMAIN].pop(entry.entry_id, None)
 
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-
+    return unload_ok

@@ -32,10 +32,12 @@ from .const import (
     CONF_LANGUAGE_NAME,
     CONF_GROUP_ID,
     DOMAIN,
-    LANGUAGES,
-    UNIQUE_ID,
+    LANGUAGE_CODES,
+    LANGUAGE_MAPPINGS,
+    get_language_api_value,
+    get_language_display_name,
     DEFAULT_LANGUAGE,
-    VOICES,
+    TTS_VOICES,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -61,7 +63,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         """Initialize TTS entity."""
         self.hass = hass
         self._config = config
-        self._attr_unique_id = config.data.get(UNIQUE_ID)
+        self._attr_unique_id = config.data.get("unique_id")
 
         # Generate entity_id in format tts.hailuo_ai_voice_name
         self.entity_id = generate_entity_id(
@@ -94,11 +96,13 @@ class HailuoAITTSEntity(TextToSpeechEntity):
     @property
     def supported_languages(self):
         """Return the list of supported languages."""
-        return list(LANGUAGES.keys())
+        return list(LANGUAGE_MAPPINGS.keys())
 
     def async_get_supported_voices(self, language: str) -> list[Voice]:
         """Return a list of supported voices for a language."""
-        return list(VOICES.keys())
+        if not (voices := TTS_VOICES.get(language)):
+            return None
+        return [Voice(voice, voice) for voice in voices]
 
     @property
     def name(self):
@@ -115,40 +119,36 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         }
 
         data = {
-            "model": self._model,
             "text": message,
+            "model": self._model,
             "voice_setting": {
                 "voice_id": self._voice,
                 "speed": self._speed,
                 "vol": self._vol,
                 "pitch": self._pitch,
             },
-            "audio_setting": {
-                "format": "mp3",
-            }
+            "language_boost": get_language_api_value(language or self._language),
         }
 
-        if self._language:
-            data["language_boost"] = self._language
+        if self._emotion:
+            data["emotion"] = self._emotion
 
         if self._english_normalization:
-            data["english_normalization"] = True
+            data["english_normalization"] = self._english_normalization
 
-        if self._emotion:
-            data["voice_setting"]["emotion"] = self._emotion
-
+        endpoint = f"https://api.minimaxi.chat/v1/t2a_v2?GroupId={self.group_id}"
+        
+        _LOGGER.debug("Request endpoint: %s", endpoint)
         _LOGGER.debug("Request header: %s", headers)
         _LOGGER.debug("Request data: %s", data)
 
         websession = async_get_clientsession(self.hass)
         try:
-            async with asyncio.timeout(30):
-                response = await websession.post(
-                    f"https://api.minimaxi.chat/v1/t2a_v2?GroupId={self.group_id}",
-                    headers=headers,
-                    json=data,
-                )
-
+            async with websession.post(
+                endpoint,
+                headers=headers,
+                json=data,
+            ) as response:
                 _LOGGER.debug("Response headers: %s", response.headers)
 
                 response.raise_for_status()
@@ -167,8 +167,8 @@ class HailuoAITTSEntity(TextToSpeechEntity):
 
                 audio_format = response_json["extra_info"]["audio_format"]
                 audio_data = binascii.unhexlify(response_json["data"]["audio"])
+
+                return (audio_format, audio_data)
         except Exception as err:
             _LOGGER.error(str(err))            
             return (None, None)
-
-        return (audio_format, audio_data)

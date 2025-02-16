@@ -1,82 +1,125 @@
-""" Constants for Hailuo AI TTS custom component"""
+"""Constants for the Hailuo AI TTS integration."""
 
 DOMAIN = "hailuo_ai_tts"
+
 CONF_GROUP_ID = "group_id"
-CONF_API_KEY = 'api_key'
-CONF_MODEL = 'model'
-CONF_SPEED = 'speed'
-CONF_VOL = 'vol'
-CONF_PITCH = 'pitch'
-CONF_VOICE = 'voice'
-CONF_EMOTION = 'emotion'
-CONF_ENGLISH_NORMALIZATION = 'english_normalization'
-CONF_LANGUAGE = 'language'
+CONF_API_KEY = "api_key"
+CONF_MODEL = "model"
+CONF_SPEED = "speed"
+CONF_VOL = "vol"
+CONF_PITCH = "pitch"
+CONF_VOICE = "voice"
+CONF_EMOTION = "emotion"
+CONF_ENGLISH_NORMALIZATION = "english_normalization"
+CONF_LANGUAGE = "language"
 
 # Display name constants
-CONF_MODEL_NAME = 'model_name'
-CONF_VOICE_NAME = 'voice_name'
-CONF_EMOTION_NAME = 'emotion_name'
-CONF_LANGUAGE_NAME = 'language_name'
+CONF_MODEL_NAME = "model_name"
+CONF_VOICE_NAME = "voice_name"
+CONF_EMOTION_NAME = "emotion_name"
+CONF_LANGUAGE_NAME = "language_name"
 
-UNIQUE_ID = 'unique_id'
-
-# Model options
-MODELS = {
-    "speech-01-turbo": "Turbo",
-    "speech-01-hd": "HD"
-}
-
-# Voice options - sorted by display name
-VOICES = {
-    "Abbess": "Abbess",
-    "Calm_Woman": "Calm Woman",
-    "Casual_Guy": "Casual Guy",
-    "Decent_Boy": "Decent Boy",
-    "Deep_Voice_Man": "Deep Voice Man",
-    "Determined_Man": "Determined Man",
-    "Elegant_Man": "Elegant Man",
-    "Exuberant_Girl": "Exuberant Girl",
-    "Friendly_Person": "Friendly Person",
-    "Imposing_Manner": "Imposing Manner",
-    "Inspirational_girl": "Inspirational Girl",
-    "Lively_Girl": "Lively Girl",
-    "Lovely_Girl": "Lovely Girl",
-    "Patient_Man": "Patient Man",
-    "Sweet_Girl_2": "Sweet Girl 2",
-    "Wise_Woman": "Wise Woman",
-    "Young_Knight": "Young Knight"
-}
-
-# Emotion options
-EMOTIONS = {
-    "": "None",
-    "happy": "Happy",
-    "sad": "Sad",
-    "angry": "Angry",
-    "fearful": "Fearful",
-    "disgusted": "Disgusted",
-    "surprised": "Surprised",
-    "neutral": "Neutral"
-}
-
-# Language options
-LANGUAGES = {
-    "Spanish": "Spanish",
-    "French": "French",
-    "Portuguese": "Portuguese",
-    "Korean": "Korean",
-    "Indonesian": "Indonesian",
-    "German": "German",
-    "Japanese": "Japanese",
-    "Italian": "Italian",
-    "Chinese": "Chinese",
-    "Chinese,Yue": "Cantonese",
-    "auto": "Auto Detect"
-}
-
-# Defaults
+# Default values
 DEFAULT_LANGUAGE = "auto"
 DEFAULT_SPEED = 1.0
 DEFAULT_VOL = 1.0
 DEFAULT_PITCH = 0
 DEFAULT_ENGLISH_NORMALIZATION = False
+
+# Available models
+MODELS = {
+    "speech-01-hd": "High Definition",
+    "speech-01-turbo": "Turbo (Fast)",
+}
+
+# Available emotions
+EMOTIONS = {
+    "happy": "Happy",
+    "sad": "Sad",
+    "angry": "Angry",
+    "fear": "Fear",
+    "hate": "Hate",
+    "surprise": "Surprise",
+    "neutral": "Neutral",
+}
+
+# Language mappings
+# Format: ISO code -> (API value, Display name)
+LANGUAGE_MAPPINGS = {
+    "es-ES": ("Spanish", "Spanish"),
+    "fr-FR": ("French", "French"),
+    "pt-PT": ("Portuguese", "Portuguese"),
+    "ko-KR": ("Korean", "Korean"),
+    "id-ID": ("Indonesian", "Indonesian"),
+    "de-DE": ("German", "German"),
+    "ja-JP": ("Japanese", "Japanese"),
+    "it-IT": ("Italian", "Italian"),
+    "zh-CN": ("Chinese", "Chinese"),
+    "zh-HK": ("Chinese,Yue", "Cantonese"),
+    "auto": ("auto", "Auto"),
+}
+
+# Language codes mapping (for backward compatibility)
+LANGUAGE_CODES = {
+    "spanish": "es-ES",
+    "french": "fr-FR",
+    "portuguese": "pt-PT",
+    "korean": "ko-KR",
+    "indonesian": "id-ID",
+    "german": "de-DE",
+    "japanese": "ja-JP",
+    "italian": "it-IT",
+    "chinese": "zh-CN",
+    "cantonese": "zh-HK",
+    "auto": "auto",
+}
+
+def get_language_api_value(iso_code: str) -> str:
+    """Get the API language value from ISO code."""
+    return LANGUAGE_MAPPINGS[iso_code][0]
+
+def get_language_display_name(iso_code: str) -> str:
+    """Get the display name from ISO code."""
+    return LANGUAGE_MAPPINGS[iso_code][1]
+
+# TTS voices per language
+TTS_VOICES = {
+    "zh-HK": [
+        "Abbess",
+        "Calm_Woman",
+        "Casual_Guy",
+        "Decent_Boy",
+        "Deep_Voice_Man",
+        "Determined_Man",
+        "Elegant_Man",
+        "Exuberant_Girl",
+        "Friendly_Person",
+        "Imposing_Manner",
+        "Inspirational_girl",
+        "Lively_Girl",
+        "Lovely_Girl",
+        "Patient_Man",
+        "Sweet_Girl_2",
+        "Wise_Woman",
+        "Young_Knight",
+    ],
+    "zh-CN": [
+        "Abbess",
+        "Calm_Woman",
+        "Casual_Guy",
+        "Decent_Boy",
+        "Deep_Voice_Man",
+        "Determined_Man",
+        "Elegant_Man",
+        "Exuberant_Girl",
+        "Friendly_Person",
+        "Imposing_Manner",
+        "Inspirational_girl",
+        "Lively_Girl",
+        "Lovely_Girl",
+        "Patient_Man",
+        "Sweet_Girl_2",
+        "Wise_Woman",
+        "Young_Knight",
+    ],
+}
