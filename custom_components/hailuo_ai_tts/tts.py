@@ -12,7 +12,7 @@ from homeassistant.components.tts import (
     Voice,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import generate_entity_id
 from .const import (
@@ -94,11 +94,11 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         """Return the list of supported languages."""
         return list(LANGUAGE_MAPPINGS.keys())
 
+    @callback
     def async_get_supported_voices(self, language: str) -> list[Voice]:
         """Return a list of supported voices for a language."""
-        if not (voices := TTS_VOICES.get(language)):
-            return None
-        return [Voice(voice, voice) for voice in voices]
+        voices = TTS_VOICES.get(language, {})
+        return [Voice(voice_id, display_name) for voice_id, display_name in voices.items()]
 
     @property
     def name(self):
@@ -131,7 +131,12 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         _LOGGER.debug("Request header: %s", headers)
         _LOGGER.debug("Request data: %s", data)
 
-        response = requests.post(endpoint, headers=headers, json=data, timeout=30)
+        response = requests.post(
+            endpoint,
+            headers=headers,
+            json=data,
+            timeout=30,
+        )
         response.raise_for_status()
         response_json = response.json()
         _LOGGER.debug("API Response: %s", {
@@ -148,4 +153,3 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         audio_format = response_json["extra_info"]["audio_format"]
         audio_data = binascii.unhexlify(response_json["data"]["audio"])
         return (audio_format, audio_data)
-
