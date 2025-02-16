@@ -77,16 +77,16 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         self._api_key = config.data[CONF_API_KEY]
         self._model = config.data[CONF_MODEL]
         self._voice = config.data[CONF_VOICE]
+        self._voice_name = TTS_VOICES[config.data[CONF_LANGUAGE]][self._voice]
         self._speed = config.data[CONF_SPEED]
         self._vol = config.data[CONF_VOL]
         self._pitch = config.data[CONF_PITCH]
         self._language = config.data[CONF_LANGUAGE]
-        self._emotion = config.data.get(CONF_EMOTION, "")
-        self._english_normalization = config.data[CONF_ENGLISH_NORMALIZATION]
-        self._model_name = config.data[CONF_MODEL_NAME]
-        self._voice_name = config.data[CONF_VOICE_NAME]
-        self._emotion_name = config.data.get(CONF_EMOTION_NAME, "")
         self._language_name = config.data[CONF_LANGUAGE_NAME]
+        self._model_name = config.data[CONF_MODEL_NAME]
+        self._emotion = config.data.get(CONF_EMOTION, "")
+        self._emotion_name = config.data.get(CONF_EMOTION_NAME, "")
+        self._english_normalization = config.data[CONF_ENGLISH_NORMALIZATION]
 
     @property
     def default_language(self):
@@ -107,7 +107,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
     @property
     def name(self):
         """Return name of entity."""
-        return f"Hailuo AI TTS ({self._config.data[CONF_LANGUAGE_NAME]}, {self._config.data[CONF_VOICE_NAME]}, {self._config.data[CONF_MODEL_NAME]})"
+        return f"Hailuo AI TTS ({self._language_name}, {self._voice_name}, {self._model_name})"
 
     async def async_get_tts_audio(
         self, message: str, language: str, options: dict[str, Any]

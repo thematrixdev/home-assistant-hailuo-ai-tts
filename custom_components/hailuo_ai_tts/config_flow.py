@@ -77,7 +77,7 @@ class HailuoAITTSConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             # Store display names
             user_input[CONF_MODEL_NAME] = MODELS[user_input[CONF_MODEL]]
-            user_input[CONF_VOICE_NAME] = voices.get(user_input[CONF_VOICE], user_input[CONF_VOICE])
+            user_input[CONF_VOICE_NAME] = TTS_VOICES[user_input[CONF_LANGUAGE]][user_input[CONF_VOICE]]
             user_input[CONF_LANGUAGE_NAME] = languages.get(user_input[CONF_LANGUAGE], user_input[CONF_LANGUAGE])
             if user_input.get(CONF_EMOTION):
                 user_input[CONF_EMOTION_NAME] = EMOTIONS[user_input[CONF_EMOTION]]

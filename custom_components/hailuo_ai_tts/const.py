@@ -20,7 +20,7 @@ CONF_EMOTION_NAME = "emotion_name"
 CONF_LANGUAGE_NAME = "language_name"
 
 # Default values
-DEFAULT_LANGUAGE = "auto"
+DEFAULT_LANGUAGE = "zh-HK"
 DEFAULT_SPEED = 1.0
 DEFAULT_VOL = 1.0
 DEFAULT_PITCH = 0
@@ -84,25 +84,17 @@ def get_language_display_name(iso_code: str) -> str:
 
 # TTS voices per language
 TTS_VOICES = {
-    "zh-HK": [
-        "Abbess",
-        "Calm_Woman",
-        "Casual_Guy",
-        "Decent_Boy",
-        "Deep_Voice_Man",
-        "Determined_Man",
-        "Elegant_Man",
-        "Exuberant_Girl",
-        "Friendly_Person",
-        "Imposing_Manner",
-        "Inspirational_girl",
-        "Lively_Girl",
-        "Lovely_Girl",
-        "Patient_Man",
-        "Sweet_Girl_2",
-        "Wise_Woman",
-        "Young_Knight",
-    ],
+    "zh-HK": {
+        "Cantonese_ProfessionalHost（F)": "Professional Female Host",
+        "Cantonese_GentleLady": "Gentle Lady",
+        "Cantonese_ProfessionalHost（M)": "Professional Male Host",
+        "Cantonese_PlayfulMan": "Playful Man",
+        "Cantonese_CuteGirl": "Cute Girl",
+        "Cantonese_KindWoman": "Kind Woman",
+        "Cantonese_Narrator": "Narrator",
+        "Cantonese_WiselProfessor": "Wise Professor",
+        "Cantonese_IndifferentStaff": "Indifferent Staff"
+    },
     "zh-CN": [
         "Abbess",
         "Calm_Woman",
