@@ -15,6 +15,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import generate_entity_id
+
 from .const import (
     CONF_API_KEY,
     CONF_MODEL,
@@ -51,7 +52,6 @@ async def async_setup_entry(
         )
     ])
 
-
 class HailuoAITTSEntity(TextToSpeechEntity):
     """The Hailuo AI TTS entity."""
 
@@ -59,35 +59,38 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         """Initialize TTS entity."""
         self.hass = hass
         self._config = config
-        self._attr_unique_id = config.data.get("unique_id")
+        self._attr_unique_id = config.unique_id
+        
+        # 初始化配置
+        self._update_from_config()
 
-        # Generate entity_id in format tts.hailuo_ai_voice_name
-        self.entity_id = generate_entity_id(
-            f"{TTS_DOMAIN}.{{}}", 
-            f"hailuoaitts_{self._config.data[CONF_LANGUAGE_NAME].lower()}_{self._config.data[CONF_VOICE_NAME].lower()}_{self._config.data[CONF_MODEL_NAME].lower()}",
-            hass=hass
-        )
+        # 監聽配置變更
+        config.add_update_listener(self._handle_config_update)
 
-        # Store configuration
-        self.group_id = config.data[CONF_GROUP_ID]
-        self._api_key = config.data[CONF_API_KEY]
-        self._model = config.data[CONF_MODEL]
-        self._voice = config.data[CONF_VOICE]
-        self._voice_name = TTS_VOICES[config.data[CONF_LANGUAGE]][self._voice]
-        self._speed = config.data[CONF_SPEED]
-        self._vol = config.data[CONF_VOL]
-        self._pitch = config.data[CONF_PITCH]
-        self._language = config.data[CONF_LANGUAGE]
-        self._language_name = config.data[CONF_LANGUAGE_NAME]
-        self._model_name = config.data[CONF_MODEL_NAME]
-        self._emotion = config.data.get(CONF_EMOTION, "")
-        self._emotion_name = config.data.get(CONF_EMOTION_NAME, "")
-        self._english_normalization = config.data[CONF_ENGLISH_NORMALIZATION]
+    def _update_from_config(self) -> None:
+        """Update local variables from config entry."""
+        data = self._config.data
+        self._api_key = data[CONF_API_KEY]
+        self._group_id = data[CONF_GROUP_ID]
+        self._model = data[CONF_MODEL]
+        self._voice = data[CONF_VOICE]
+        self._speed = data[CONF_SPEED]
+        self._vol = data[CONF_VOL]
+        self._pitch = data[CONF_PITCH]
+        self._emotion = data.get(CONF_EMOTION)
+        self._english_normalization = data[CONF_ENGLISH_NORMALIZATION]
+        self._language = data[CONF_LANGUAGE]
+
+    async def _handle_config_update(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
+        """Handle config update."""
+        self._config = entry
+        self._update_from_config()
+        self.async_write_ha_state()
 
     @property
     def default_language(self):
         """Return the default language."""
-        return DEFAULT_LANGUAGE
+        return self._language
 
     @property
     def supported_languages(self):
@@ -103,7 +106,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
     @property
     def name(self):
         """Return name of entity."""
-        return f"Hailuo AI TTS ({self._language_name}, {self._voice_name}, {self._model_name})"
+        return f"Hailuo AI TTS"
 
     def get_tts_audio(self, message: str, language: str, options: dict[str, Any]) -> TtsAudioType:
         headers = {
@@ -126,7 +129,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         if self._english_normalization:
             data["english_normalization"] = self._english_normalization
 
-        endpoint = f"https://api.minimaxi.chat/v1/t2a_v2?GroupId={self.group_id}"
+        endpoint = f"https://api.minimaxi.chat/v1/t2a_v2?GroupId={self._group_id}"
         _LOGGER.debug("Request endpoint: %s", endpoint)
         _LOGGER.debug("Request header: %s", headers)
         _LOGGER.debug("Request data: %s", data)

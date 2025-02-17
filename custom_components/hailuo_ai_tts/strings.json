@@ -3,7 +3,7 @@
         "step": {
             "user": {
                 "title": "Hailuo AI TTS",
-                "description": "Set up Hailuo AI TTS integration",
+                "description": "Set up Hailuo AI TTS",
                 "data": {
                     "group_id": "Group ID",
                     "api_key": "API Key",
@@ -19,10 +19,33 @@
             }
         },
         "error": {
-            "base": "{error_msg}"
+            "base": "{error_msg}",
+            "invalid_auth": "Invalid authentication",
+            "cannot_connect": "Failed to connect"
         },
         "abort": {
-            "already_configured": "Device is already configured"
+            "already_configured": "Device is already configured",
+            "reconfigure_successful": "Re-configuration was successful"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Hailuo AI TTS",
+                "description": "Modify Hailuo AI TTS",
+                "data": {
+                    "group_id": "Group ID",
+                    "api_key": "API Key",
+                    "model": "Model",
+                    "speed": "Speed",
+                    "vol": "Volume",
+                    "pitch": "Pitch",
+                    "voice": "Voice",
+                    "emotion": "Emotion",
+                    "english_normalization": "English Normalization",
+                    "language": "Language"
+                }
+            }
         }
     },
     "languages": {

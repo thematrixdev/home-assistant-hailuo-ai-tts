@@ -28,8 +28,8 @@ DEFAULT_ENGLISH_NORMALIZATION = False
 
 # Available models
 MODELS = {
-    "speech-01-hd": "High Definition",
-    "speech-01-turbo": "Turbo (Fast)",
+    "speech-01-hd": "HD",
+    "speech-01-turbo": "Turbo",
 }
 
 # Available emotions

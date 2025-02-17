@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import aiofiles
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
@@ -22,11 +21,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Load translations from strings.json
     strings_path = Path(__file__).parent / "strings.json"
     try:
-        async with aiofiles.open(strings_path, mode='r', encoding="utf-8") as f:
-            content = await f.read()
-            strings = json.loads(content)
-            hass.data[DOMAIN]["languages"] = strings.get("languages", {})
-            hass.data[DOMAIN]["voices"] = strings.get("voices", {})
+        content = await hass.async_add_executor_job(
+            lambda: strings_path.read_text(encoding="utf-8")
+        )
+        strings = json.loads(content)
+        hass.data[DOMAIN]["languages"] = strings.get("languages", {})
+        hass.data[DOMAIN]["voices"] = strings.get("voices", {})
     except (FileNotFoundError, json.JSONDecodeError):
         hass.data[DOMAIN]["languages"] = {}
         hass.data[DOMAIN]["voices"] = {}
