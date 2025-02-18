@@ -5,8 +5,8 @@ import logging
 import binascii
 import requests
 from typing import Any
-from homeassistant.components.tts import DOMAIN as TTS_DOMAIN
 from homeassistant.components.tts import (
+    ATTR_VOICE,
     TextToSpeechEntity,
     TtsAudioType,
     Voice,
@@ -57,6 +57,8 @@ async def async_setup_entry(
 
 class HailuoAITTSEntity(TextToSpeechEntity):
     """The Hailuo AI TTS entity."""
+
+    _attr_supported_options = [ATTR_VOICE]
 
     def __init__(self, hass, config):
         """Initialize TTS entity."""
