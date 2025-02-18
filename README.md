@@ -2,11 +2,14 @@
 
 ## Prerequisite
 
-- API Key from Hailuo AI
+API Key from Hailuo AI
+
+International https://intl.minimaxi.com/
+
+China https://platform.minimaxi.com/
 
 ## Features
 
-- Multiple voice options (17 different voices)
 - Multiple language support:
   - Spanish
   - French
@@ -19,10 +22,18 @@
   - Chinese
   - Cantonese
   - Auto-detect
+
+- Multiple voice
+
+- Two model:
+  - Turbo
+  - HD
+
 - Adjustable speech parameters:
   - Speed (0.5-2.0)
   - Volume (0-10)
   - Pitch (-12 to 12)
+
 - Optional emotion settings:
   - Happy
   - Sad
@@ -31,9 +42,7 @@
   - Disgusted
   - Surprised
   - Neutral
-- Two model options:
-  - Turbo (Fast generation)
-  - HD (Enhanced audio quality)
+
 - English normalization option
 
 ## Add to HACS
@@ -54,55 +63,21 @@
 2. Click the `Add Integration` button
 3. Search `Hailuo-AI TTS`
 4. Go through the configuration flow:
-   - Enter your API Key
-   - Select a model (Turbo or HD)
-   - Choose a voice
-   - Adjust speech parameters (speed, volume, pitch)
-   - Select a language
-   - Optionally select an emotion
-   - Enable/disable English normalization
-
-## Configuration Options
-
-### Required Fields
-
-- **Group ID**: Your Hailuo AI group identifier
-- **API Key**: Your Hailuo AI API key
-- **Model**: Choose between Turbo (fast) or HD (high quality)
-- **Voice**: Select from 17 different voice options
-- **Speed**: Speech speed (0.5-2.0, default: 1.0)
-- **Volume**: Audio volume (0-10, default: 1.0)
-- **Pitch**: Voice pitch (-12 to 12, default: 0)
-- **Language**: Select from multiple languages or auto-detect
-
-### Optional Fields
-
-- **Emotion**: Add emotional tone to the speech
-- **English Normalization**: Improve English pronunciation (default: false)
 
 ## Debug
-
-### Basic
-
-- On Home Assistant, go to `Settings` -> `Logs`
-- Search `Hailuo-AI TTS`
-- Click the `LOAD FULL LOGS` button
-
-### Advanced
 
 - Add these lines to `configuration.yaml`
 
 ```yaml
 logger:
-  default: info
   logs:
     custom_components.hailuo_ai_tts: debug
 ```
 
 - Restart Home Assistant
 - On Home Assistant, go to `Settings` -> `Logs`
-- Search `Hailuo-AI TTS`
-- Click the `LOAD FULL LOGS` button
+- Click the `Show RAW logs` button
+- Search `hailuo_ai_tts`
 
 ## Support
 
