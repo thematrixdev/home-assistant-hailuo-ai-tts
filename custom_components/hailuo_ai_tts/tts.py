@@ -154,16 +154,24 @@ class HailuoAITTSEntity(TextToSpeechEntity):
                 "model": self._model,
                 "voice_setting": {
                     "voice_id": voice_id,
-                    "speed": self._speed,
-                    "vol": self._vol,
-                    "pitch": self._pitch,
                 },
                 "language_boost": get_language_api_value(language or self._language),
             }
+            
+            if self._speed != 1:
+                data["voice_setting"]["speed"] = self._speed
+
+            if self._vol != 1:
+                data["voice_setting"]["vol"] = self._vol
+
+            if self._pitch != 0:
+                data["voice_setting"]["pitch"] = self._pitch
+
             if self._emotion:
-                data["emotion"] = self._emotion
+                data["voice_setting"]["emotion"] = self._emotion
+
             if self._english_normalization:
-                data["english_normalization"] = self._english_normalization
+                data["voice_setting"]["english_normalization"] = self._english_normalization
 
             endpoint = "https://api.minimaxi.chat/v1/t2a_v2" if self._server == "international" else "https://api.minimax.chat/v1/t2a_v2"
             _LOGGER.debug("Request endpoint: %s", endpoint)
