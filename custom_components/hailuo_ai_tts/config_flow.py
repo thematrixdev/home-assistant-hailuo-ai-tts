@@ -13,12 +13,18 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
     OptionsFlow,
 )
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+)
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
     DOMAIN,
     CONF_GROUP_ID,
     CONF_API_KEY,
+    CONF_SERVER,
     CONF_MODEL,
     CONF_SPEED,
     CONF_VOL,
@@ -40,24 +46,42 @@ from .const import (
     DEFAULT_VOL,
     DEFAULT_PITCH,
     DEFAULT_ENGLISH_NORMALIZATION,
+    DEFAULT_SERVER,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
-def get_schema(languages: dict, language: str, defaults: dict | None = None) -> vol.Schema:
-    """Get schema with the specified language and defaults."""
+def get_schema_step1(languages: dict, language: str, defaults: dict | None = None) -> vol.Schema:
+    """Get schema for step 1 (all options except voice)."""
     if defaults is None:
         defaults = {}
 
     schema = {
-        vol.Required(CONF_GROUP_ID, default=defaults.get(CONF_GROUP_ID)): cv.string,
+        vol.Required(CONF_SERVER, default=defaults.get(CONF_SERVER, DEFAULT_SERVER)): SelectSelector(
+            SelectSelectorConfig(
+                options=[
+                    SelectOptionDict(value="international", label="International"),
+                    SelectOptionDict(value="china", label="China"),
+                ]
+            )
+        ),
         vol.Required(CONF_API_KEY, default=defaults.get(CONF_API_KEY)): cv.string,
-        vol.Required(CONF_LANGUAGE, default=language): vol.In({
-            code: languages.get(code, code)
-            for code in LANGUAGE_CODES.values()
-        }),
-        vol.Required(CONF_VOICE, default=defaults.get(CONF_VOICE)): vol.In(TTS_VOICES[language]),
-        vol.Required(CONF_MODEL, default=defaults.get(CONF_MODEL)): vol.In(MODELS),
+        vol.Required(CONF_LANGUAGE, default=language): SelectSelector(
+            SelectSelectorConfig(
+                options=[
+                    SelectOptionDict(value=code, label=languages.get(code, code))
+                    for code in LANGUAGE_CODES.values()
+                ]
+            )
+        ),
+        vol.Required(CONF_MODEL, default=defaults.get(CONF_MODEL)): SelectSelector(
+            SelectSelectorConfig(
+                options=[
+                    SelectOptionDict(value=model_id, label=model_name)
+                    for model_id, model_name in MODELS.items()
+                ]
+            )
+        ),
         vol.Required(
             CONF_SPEED,
             default=defaults.get(CONF_SPEED, DEFAULT_SPEED)
@@ -79,11 +103,37 @@ def get_schema(languages: dict, language: str, defaults: dict | None = None) -> 
             vol.Coerce(int),
             vol.Range(min=-12, max=12)
         ),
-        vol.Optional(CONF_EMOTION, default=defaults.get(CONF_EMOTION, "")): vol.In({**EMOTIONS, "": ""}),
+        vol.Optional(CONF_EMOTION, default=defaults.get(CONF_EMOTION, "")): SelectSelector(
+            SelectSelectorConfig(
+                options=[
+                    SelectOptionDict(value="", label="None"),
+                    *[SelectOptionDict(value=emotion_id, label=emotion_name)
+                      for emotion_id, emotion_name in EMOTIONS.items()]
+                ]
+            )
+        ),
         vol.Required(
             CONF_ENGLISH_NORMALIZATION,
             default=defaults.get(CONF_ENGLISH_NORMALIZATION, DEFAULT_ENGLISH_NORMALIZATION)
         ): cv.boolean,
+    }
+
+    return vol.Schema(schema)
+
+def get_schema_step2(language: str, defaults: dict | None = None) -> vol.Schema:
+    """Get schema for step 2 (voice selection)."""
+    if defaults is None:
+        defaults = {}
+
+    schema = {
+        vol.Required(CONF_VOICE, default=defaults.get(CONF_VOICE)): SelectSelector(
+            SelectSelectorConfig(
+                options=[
+                    SelectOptionDict(value=voice_id, label=voice_name)
+                    for voice_id, voice_name in TTS_VOICES[language].items()
+                ]
+            )
+        ),
     }
 
     return vol.Schema(schema)
@@ -98,6 +148,7 @@ class HailuoAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
         self._strings = None
         self._entry = None
+        self._user_input = {}
 
     async def _load_strings(self) -> None:
         """Load strings.json file."""
@@ -116,28 +167,51 @@ class HailuoAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
+        """Handle the initial step."""
         await self._load_strings()
         languages = self._strings.get("languages", {})
+        current = self._entry.data if self._entry else {}
 
         if user_input is not None:
-            # Store display names
-            user_input[CONF_MODEL_NAME] = MODELS[user_input[CONF_MODEL]]
-            user_input[CONF_VOICE_NAME] = TTS_VOICES[user_input[CONF_LANGUAGE]][user_input[CONF_VOICE]]
-            user_input[CONF_LANGUAGE_NAME] = languages.get(user_input[CONF_LANGUAGE], user_input[CONF_LANGUAGE])
-            if user_input.get(CONF_EMOTION):
-                user_input[CONF_EMOTION_NAME] = EMOTIONS[user_input[CONF_EMOTION]]
-
-            return self.async_create_entry(
-                title="Hailuo AI TTS",
-                data=user_input,
-            )
-
-        current = self._entry.data if self._entry else {}
-        language = current.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
+            self._user_input.update(user_input)
+            return await self.async_step_voice()
 
         return self.async_show_form(
             step_id="user",
-            data_schema=get_schema(languages, language, current),
+            data_schema=get_schema_step1(languages, DEFAULT_LANGUAGE, current),
+        )
+
+    async def async_step_voice(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle the voice selection step."""
+        languages = self._strings.get("languages", {})
+
+        if user_input is not None:
+            self._user_input.update(user_input)
+            
+            # Store display names
+            self._user_input[CONF_MODEL_NAME] = MODELS[self._user_input[CONF_MODEL]]
+            self._user_input[CONF_VOICE_NAME] = TTS_VOICES[self._user_input[CONF_LANGUAGE]][self._user_input[CONF_VOICE]]
+            self._user_input[CONF_LANGUAGE_NAME] = languages.get(self._user_input[CONF_LANGUAGE], self._user_input[CONF_LANGUAGE])
+            if self._user_input.get(CONF_EMOTION):
+                self._user_input[CONF_EMOTION_NAME] = EMOTIONS[self._user_input[CONF_EMOTION]]
+
+            return self.async_create_entry(
+                title="Hailuo AI TTS",
+                data=self._user_input,
+            )
+
+        current = self._entry.data if self._entry else {}
+        return self.async_show_form(
+            step_id="voice",
+            data_schema=get_schema_step2(self._user_input[CONF_LANGUAGE], current),
+            description_placeholders={
+                "language": self._strings.get("languages", {}).get(
+                    self._user_input[CONF_LANGUAGE],
+                    self._user_input[CONF_LANGUAGE]
+                )
+            }
         )
     
     @staticmethod
@@ -151,10 +225,11 @@ class HailuoAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
 class HailuoAITTSOptionsFlow(OptionsFlow):
     """Handle options flow for Hailuo AI TTS."""
 
-    def __init__(self, config_entry: ConfigEntry):
+    def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
+        super().__init__()
         self._strings = None
+        self._user_input = {}
 
     async def _load_strings(self) -> None:
         """Load strings.json file."""
@@ -173,28 +248,52 @@ class HailuoAITTSOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Manage the options."""
+        """Handle the initial step."""
         await self._load_strings()
         languages = self._strings.get("languages", {})
+        data = self.config_entry.data
+        options = self.config_entry.options
+        defaults = {**data, **options}
 
         if user_input is not None:
-            user_input[CONF_MODEL_NAME] = MODELS[user_input[CONF_MODEL]]
-            user_input[CONF_VOICE_NAME] = TTS_VOICES[user_input[CONF_LANGUAGE]][user_input[CONF_VOICE]]
-            user_input[CONF_LANGUAGE_NAME] = languages.get(user_input[CONF_LANGUAGE], user_input[CONF_LANGUAGE])
-            if user_input.get(CONF_EMOTION):
-                user_input[CONF_EMOTION_NAME] = EMOTIONS[user_input[CONF_EMOTION]]
-
-            updated_data = {**self.config_entry.data, **user_input}
-            self.hass.config_entries.async_update_entry(
-                self.config_entry,
-                data=updated_data,
-            )
-            return self.async_create_entry(data=updated_data)
-
-        current = self.config_entry.data
-        language = current.get(CONF_LANGUAGE, DEFAULT_LANGUAGE)
+            self._user_input.update(user_input)
+            return await self.async_step_voice()
 
         return self.async_show_form(
             step_id="init",
-            data_schema=get_schema(languages, language, current),
+            data_schema=get_schema_step1(languages, defaults.get(CONF_LANGUAGE, DEFAULT_LANGUAGE), defaults),
+        )
+
+    async def async_step_voice(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle the voice selection step."""
+        languages = self._strings.get("languages", {})
+
+        if user_input is not None:
+            self._user_input.update(user_input)
+            
+            # Store display names
+            self._user_input[CONF_MODEL_NAME] = MODELS[self._user_input[CONF_MODEL]]
+            self._user_input[CONF_VOICE_NAME] = TTS_VOICES[self._user_input[CONF_LANGUAGE]][self._user_input[CONF_VOICE]]
+            self._user_input[CONF_LANGUAGE_NAME] = languages.get(self._user_input[CONF_LANGUAGE], self._user_input[CONF_LANGUAGE])
+            if self._user_input.get(CONF_EMOTION):
+                self._user_input[CONF_EMOTION_NAME] = EMOTIONS[self._user_input[CONF_EMOTION]]
+
+            return self.async_create_entry(title="", data=self._user_input)
+
+        data = self.config_entry.data
+        options = self.config_entry.options
+        defaults = {**data, **options}
+        # Only pass the current voice if the language hasn't changed
+        voice_defaults = defaults if defaults.get(CONF_LANGUAGE) == self._user_input[CONF_LANGUAGE] else None
+        return self.async_show_form(
+            step_id="voice",
+            data_schema=get_schema_step2(self._user_input[CONF_LANGUAGE], voice_defaults),
+            description_placeholders={
+                "language": self._strings.get("languages", {}).get(
+                    self._user_input[CONF_LANGUAGE],
+                    self._user_input[CONF_LANGUAGE]
+                )
+            }
         )

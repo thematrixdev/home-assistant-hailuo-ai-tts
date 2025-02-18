@@ -18,6 +18,7 @@ from homeassistant.helpers.entity import generate_entity_id
 
 from .const import (
     CONF_API_KEY,
+    CONF_SERVER,
     CONF_MODEL,
     CONF_SPEED,
     CONF_VOL,
@@ -69,9 +70,12 @@ class HailuoAITTSEntity(TextToSpeechEntity):
 
     def _update_from_config(self) -> None:
         """Update local variables from config entry."""
-        data = self._config.data
+        data = {
+            **self._config.data,
+            **self._config.options
+        }
         self._api_key = data[CONF_API_KEY]
-        self._group_id = data[CONF_GROUP_ID]
+        self._server = data[CONF_SERVER]
         self._model = data[CONF_MODEL]
         self._voice = data[CONF_VOICE]
         self._speed = data[CONF_SPEED]
@@ -100,6 +104,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
     @callback
     def async_get_supported_voices(self, language: str) -> list[Voice]:
         """Return a list of supported voices for a language."""
+        _LOGGER.debug("Supported voices for language: %s", language)
         voices = TTS_VOICES.get(language, {})
         return [Voice(voice_id, display_name) for voice_id, display_name in voices.items()]
 
@@ -129,7 +134,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         if self._english_normalization:
             data["english_normalization"] = self._english_normalization
 
-        endpoint = f"https://api.minimaxi.chat/v1/t2a_v2?GroupId={self._group_id}"
+        endpoint = "https://api.minimaxi.chat/v1/t2a_v2" if self._server == "international" else "https://api.minimax.chat/v1/t2a_v2"
         _LOGGER.debug("Request endpoint: %s", endpoint)
         _LOGGER.debug("Request header: %s", headers)
         _LOGGER.debug("Request data: %s", data)

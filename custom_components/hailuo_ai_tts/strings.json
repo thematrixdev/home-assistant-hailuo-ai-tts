@@ -3,18 +3,23 @@
         "step": {
             "user": {
                 "title": "Hailuo AI TTS",
-                "description": "Set up Hailuo AI TTS",
                 "data": {
-                    "group_id": "Group ID",
+                    "server": "Server",
                     "api_key": "API Key",
                     "model": "Model",
                     "speed": "Speed",
                     "vol": "Volume",
                     "pitch": "Pitch",
-                    "voice": "Voice",
                     "emotion": "Emotion",
                     "english_normalization": "English Normalization",
                     "language": "Language"
+                }
+            },
+            "voice": {
+                "title": "Select Voice",
+                "description": "Choose a voice for the selected language",
+                "data": {
+                    "voice": "Voice"
                 }
             }
         },
@@ -32,18 +37,23 @@
         "step": {
             "init": {
                 "title": "Hailuo AI TTS",
-                "description": "Modify Hailuo AI TTS",
                 "data": {
-                    "group_id": "Group ID",
+                    "server": "Server",
                     "api_key": "API Key",
                     "model": "Model",
                     "speed": "Speed",
                     "vol": "Volume",
                     "pitch": "Pitch",
-                    "voice": "Voice",
                     "emotion": "Emotion",
                     "english_normalization": "English Normalization",
                     "language": "Language"
+                }
+            },
+            "voice": {
+                "title": "Select Voice",
+                "description": "Choose a voice for the selected language",
+                "data": {
+                    "voice": "Voice"
                 }
             }
         }
@@ -67,25 +77,6 @@
         "vi-VN": "Vietnamese",
         "zh-CN": "Chinese",
         "zh-HK": "Cantonese",
-        "auto": "Auto Detect"
-    },
-    "voices": {
-        "Abbess": "Abbess",
-        "Calm_Woman": "Calm Woman",
-        "Casual_Guy": "Casual Guy",
-        "Decent_Boy": "Decent Boy",
-        "Deep_Voice_Man": "Deep Voice Man",
-        "Determined_Man": "Determined Man",
-        "Elegant_Man": "Elegant Man",
-        "Exuberant_Girl": "Exuberant Girl",
-        "Friendly_Person": "Friendly Person",
-        "Imposing_Manner": "Imposing Manner",
-        "Inspirational_girl": "Inspirational Girl",
-        "Lively_Girl": "Lively Girl",
-        "Lovely_Girl": "Lovely Girl",
-        "Patient_Man": "Patient Man",
-        "Sweet_Girl_2": "Sweet Girl 2",
-        "Wise_Woman": "Wise Woman",
-        "Young_Knight": "Young Knight"
+        "auto": "Auto"
     }
 }

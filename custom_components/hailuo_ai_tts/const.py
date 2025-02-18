@@ -4,6 +4,7 @@ DOMAIN = "hailuo_ai_tts"
 
 CONF_GROUP_ID = "group_id"
 CONF_API_KEY = "api_key"
+CONF_SERVER = "server"
 CONF_MODEL = "model"
 CONF_SPEED = "speed"
 CONF_VOL = "vol"
@@ -21,6 +22,7 @@ CONF_LANGUAGE_NAME = "language_name"
 
 # Default values
 DEFAULT_LANGUAGE = "zh-HK"
+DEFAULT_SERVER = "international"
 DEFAULT_SPEED = 1.0
 DEFAULT_VOL = 1.0
 DEFAULT_PITCH = 0
