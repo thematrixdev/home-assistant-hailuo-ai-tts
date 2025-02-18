@@ -19,14 +19,17 @@
                 "title": "Select Voice",
                 "description": "Choose a voice for the selected language",
                 "data": {
-                    "voice": "Voice"
+                    "voice": "Voice",
+                    "custom_voice_id": "Custom Voice ID"
                 }
             }
         },
         "error": {
             "base": "{error_msg}",
             "invalid_auth": "Invalid authentication",
-            "cannot_connect": "Failed to connect"
+            "cannot_connect": "Failed to connect",
+            "voice_required": "Please select a voice or provide a voice ID",
+            "custom_voice_id_required": "Please enter a custom voice ID"
         },
         "abort": {
             "already_configured": "Device is already configured",
@@ -53,7 +56,8 @@
                 "title": "Select Voice",
                 "description": "Choose a voice for the selected language",
                 "data": {
-                    "voice": "Voice"
+                    "voice": "Voice",
+                    "custom_voice_id": "Custom Voice ID"
                 }
             }
         }

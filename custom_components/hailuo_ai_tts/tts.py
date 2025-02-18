@@ -78,6 +78,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         self._server = data[CONF_SERVER]
         self._model = data[CONF_MODEL]
         self._voice = data[CONF_VOICE]
+        self._custom_voice_id = data.get("custom_voice_id", "")
         self._speed = data[CONF_SPEED]
         self._vol = data[CONF_VOL]
         self._pitch = data[CONF_PITCH]
@@ -118,11 +119,17 @@ class HailuoAITTSEntity(TextToSpeechEntity):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self._api_key}"
         }
+        
+        # 檢查是否有自定義語音ID
+        voice_id = self._voice
+        if hasattr(self, '_custom_voice_id') and self._custom_voice_id:
+            voice_id = self._custom_voice_id
+        
         data = {
             "text": message,
             "model": self._model,
             "voice_setting": {
-                "voice_id": self._voice,
+                "voice_id": voice_id,
                 "speed": self._speed,
                 "vol": self._vol,
                 "pitch": self._pitch,
