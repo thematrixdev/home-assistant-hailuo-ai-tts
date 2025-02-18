@@ -13,12 +13,12 @@ CONF_VOICE = "voice"
 CONF_EMOTION = "emotion"
 CONF_ENGLISH_NORMALIZATION = "english_normalization"
 CONF_LANGUAGE = "language"
-
-# Display name constants
 CONF_MODEL_NAME = "model_name"
 CONF_VOICE_NAME = "voice_name"
 CONF_EMOTION_NAME = "emotion_name"
 CONF_LANGUAGE_NAME = "language_name"
+CONF_CUSTOM_VOICE_ID = "custom_voice_id"
+CONF_CUSTOM_VOICE_NAME = "custom_voice_name"
 
 # Default values
 DEFAULT_LANGUAGE = "zh-HK"

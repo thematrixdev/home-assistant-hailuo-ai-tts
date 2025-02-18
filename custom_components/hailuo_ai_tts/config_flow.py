@@ -35,6 +35,8 @@ from .const import (
     CONF_LANGUAGE,
     CONF_MODEL_NAME,
     CONF_VOICE_NAME,
+    CONF_CUSTOM_VOICE_ID,
+    CONF_CUSTOM_VOICE_NAME,
     CONF_EMOTION_NAME,
     CONF_LANGUAGE_NAME,
     MODELS,
@@ -126,15 +128,16 @@ def get_schema_step2(language: str, defaults: dict | None = None) -> vol.Schema:
         defaults = {}
 
     schema = {
-        vol.Optional(CONF_VOICE, default=defaults.get(CONF_VOICE)): SelectSelector(
+        vol.Optional(CONF_VOICE, default=defaults.get(CONF_VOICE, "")): SelectSelector(
             SelectSelectorConfig(
                 options=[
-                    SelectOptionDict(value=voice_id, label=voice_name)
-                    for voice_id, voice_name in TTS_VOICES[language].items()
+                    *[SelectOptionDict(value=voice_id, label=voice_name) for voice_id, voice_name in TTS_VOICES[language].items()],
+                    SelectOptionDict(value="custom", label="Custom Voice")
                 ]
             )
         ),
-        vol.Optional("custom_voice_id", default=defaults.get("custom_voice_id", "")): cv.string,
+        vol.Optional(CONF_CUSTOM_VOICE_ID, default=defaults.get(CONF_CUSTOM_VOICE_ID, "")): cv.string,
+        vol.Optional(CONF_CUSTOM_VOICE_NAME, default=defaults.get(CONF_CUSTOM_VOICE_NAME, "")): cv.string,
     }
 
     return vol.Schema(schema)
@@ -186,10 +189,9 @@ class HailuoAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the voice selection step."""
-        languages = self._strings.get("languages", {})
 
         if user_input is not None:
-            if not user_input.get(CONF_VOICE) and not user_input.get("custom_voice_id"):
+            if not user_input.get(CONF_VOICE) and not user_input.get(CONF_CUSTOM_VOICE_ID):
                 return self.async_show_form(
                     step_id="voice",
                     data_schema=get_schema_step2(self._user_input[CONF_LANGUAGE], user_input),
@@ -201,21 +203,17 @@ class HailuoAITTSConfigFlow(ConfigFlow, domain=DOMAIN):
                         )
                     }
                 )
-            
-            self._user_input.update(user_input)
-            
-            self._user_input[CONF_MODEL_NAME] = MODELS[self._user_input[CONF_MODEL]]
-            
-            if self._user_input.get("custom_voice_id"):
-                self._user_input[CONF_VOICE] = ""
-                self._user_input.pop(CONF_VOICE_NAME, None)
-            elif self._user_input.get(CONF_VOICE):
-                self._user_input[CONF_VOICE_NAME] = TTS_VOICES[self._user_input[CONF_LANGUAGE]][self._user_input[CONF_VOICE]]
-            
-            self._user_input[CONF_LANGUAGE_NAME] = languages.get(self._user_input[CONF_LANGUAGE], self._user_input[CONF_LANGUAGE])
-            if self._user_input.get(CONF_EMOTION):
-                self._user_input[CONF_EMOTION_NAME] = EMOTIONS[self._user_input[CONF_EMOTION]]
 
+            if user_input.get(CONF_VOICE):
+                if user_input[CONF_VOICE] != "custom":
+                    user_input[CONF_VOICE_NAME] = TTS_VOICES[self._user_input[CONF_LANGUAGE]][user_input[CONF_VOICE]]
+                else:
+                    user_input[CONF_VOICE_NAME] = "Custom"
+
+            if user_input.get(CONF_CUSTOM_VOICE_ID):
+                user_input[CONF_CUSTOM_VOICE_NAME] = user_input.get(CONF_CUSTOM_VOICE_NAME) or "Custom Voice"
+
+            self._user_input.update(user_input)
             return self.async_create_entry(
                 title="Hailuo AI TTS",
                 data=self._user_input,
@@ -287,10 +285,9 @@ class HailuoAITTSOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the voice selection step."""
-        languages = self._strings.get("languages", {})
 
         if user_input is not None:
-            if not user_input.get(CONF_VOICE) and not user_input.get("custom_voice_id"):
+            if not user_input.get(CONF_VOICE) and not user_input.get(CONF_CUSTOM_VOICE_ID):
                 return self.async_show_form(
                     step_id="voice",
                     data_schema=get_schema_step2(self._user_input[CONF_LANGUAGE], user_input),
@@ -303,19 +300,16 @@ class HailuoAITTSOptionsFlow(OptionsFlow):
                     }
                 )
             
+            if user_input.get(CONF_VOICE):
+                if user_input[CONF_VOICE] != "custom":
+                    user_input[CONF_VOICE_NAME] = TTS_VOICES[self._user_input[CONF_LANGUAGE]][user_input[CONF_VOICE]]
+                else:
+                    user_input[CONF_VOICE_NAME] = "Custom"
+
+            if user_input.get(CONF_CUSTOM_VOICE_ID):
+                user_input[CONF_CUSTOM_VOICE_NAME] = user_input.get(CONF_CUSTOM_VOICE_NAME) or "Custom Voice"
+
             self._user_input.update(user_input)
-            
-            self._user_input[CONF_MODEL_NAME] = MODELS[self._user_input[CONF_MODEL]]
-            
-            if self._user_input.get("custom_voice_id"):
-                self._user_input[CONF_VOICE] = ""
-                self._user_input.pop(CONF_VOICE_NAME, None)
-            elif self._user_input.get(CONF_VOICE):
-                self._user_input[CONF_VOICE_NAME] = TTS_VOICES[self._user_input[CONF_LANGUAGE]][self._user_input[CONF_VOICE]]
-            
-            self._user_input[CONF_LANGUAGE_NAME] = languages.get(self._user_input[CONF_LANGUAGE], self._user_input[CONF_LANGUAGE])
-            if self._user_input.get(CONF_EMOTION):
-                self._user_input[CONF_EMOTION_NAME] = EMOTIONS[self._user_input[CONF_EMOTION]]
 
             return self.async_create_entry(
                 title="Hailuo AI TTS",

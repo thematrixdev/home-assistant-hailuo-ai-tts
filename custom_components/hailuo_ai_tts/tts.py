@@ -24,11 +24,13 @@ from .const import (
     CONF_VOL,
     CONF_PITCH,
     CONF_VOICE,
+    CONF_VOICE_NAME,
+    CONF_CUSTOM_VOICE_ID,
+    CONF_CUSTOM_VOICE_NAME,
     CONF_EMOTION,
     CONF_ENGLISH_NORMALIZATION,
     CONF_LANGUAGE,
     CONF_MODEL_NAME,
-    CONF_VOICE_NAME,
     CONF_EMOTION_NAME,
     CONF_LANGUAGE_NAME,
     CONF_GROUP_ID,
@@ -78,7 +80,8 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         self._server = data[CONF_SERVER]
         self._model = data[CONF_MODEL]
         self._voice = data[CONF_VOICE]
-        self._custom_voice_id = data.get("custom_voice_id", "")
+        self._custom_voice_id = data[CONF_CUSTOM_VOICE_ID]
+        self._custom_voice_name = data[CONF_CUSTOM_VOICE_NAME]
         self._speed = data[CONF_SPEED]
         self._vol = data[CONF_VOL]
         self._pitch = data[CONF_PITCH]
@@ -88,7 +91,6 @@ class HailuoAITTSEntity(TextToSpeechEntity):
 
     async def _handle_config_update(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Handle config update."""
-        self._config = entry
         self._update_from_config()
         self.async_write_ha_state()
 
@@ -107,7 +109,16 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         """Return a list of supported voices for a language."""
         _LOGGER.debug("Supported voices for language: %s", language)
         voices = TTS_VOICES.get(language, {})
-        return [Voice(voice_id, display_name) for voice_id, display_name in voices.items()]
+        voice_list = [Voice(voice_id, display_name) for voice_id, display_name in voices.items()]
+        if hasattr(self, '_custom_voice_id') and self._custom_voice_id:
+            voice_list.append(Voice(
+                voice_id=self._custom_voice_id,
+                name=self._custom_voice_name
+            ))
+
+        _LOGGER.debug("Voice list: %s", voice_list)
+        
+        return voice_list
 
     @property
     def name(self):
@@ -119,11 +130,13 @@ class HailuoAITTSEntity(TextToSpeechEntity):
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self._api_key}"
         }
-        
-        # 檢查是否有自定義語音ID
-        voice_id = self._voice
-        if hasattr(self, '_custom_voice_id') and self._custom_voice_id:
+
+        if self._voice == "custom" and self._custom_voice_id != "":
             voice_id = self._custom_voice_id
+        elif self._voice != "custom":
+            voice_id = self._voice
+        else:
+            voice_id = list(TTS_VOICES[language].keys())[0]
         
         data = {
             "text": message,
