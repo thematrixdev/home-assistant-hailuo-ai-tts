@@ -3,7 +3,9 @@ Setting up TTS entity.
 """
 import logging
 import binascii
-import requests
+import asyncio
+import aiohttp
+from homeassistant.exceptions import HomeAssistantError
 from typing import Any
 from homeassistant.components.tts import (
     ATTR_VOICE,
@@ -127,59 +129,78 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         """Return name of entity."""
         return f"Hailuo AI TTS"
 
-    def get_tts_audio(self, message: str, language: str, options: dict[str, Any]) -> TtsAudioType:
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self._api_key}"
-        }
-
-        if self._voice == "custom" and self._custom_voice_id != "":
-            voice_id = self._custom_voice_id
-        elif self._voice != "custom":
-            voice_id = self._voice
-        else:
-            voice_id = list(TTS_VOICES[language].keys())[0]
-        
-        data = {
-            "text": message,
-            "model": self._model,
-            "voice_setting": {
-                "voice_id": voice_id,
-                "speed": self._speed,
-                "vol": self._vol,
-                "pitch": self._pitch,
-            },
-            "language_boost": get_language_api_value(language or self._language),
-        }
-        if self._emotion:
-            data["emotion"] = self._emotion
-        if self._english_normalization:
-            data["english_normalization"] = self._english_normalization
-
-        endpoint = "https://api.minimaxi.chat/v1/t2a_v2" if self._server == "international" else "https://api.minimax.chat/v1/t2a_v2"
-        _LOGGER.debug("Request endpoint: %s", endpoint)
-        _LOGGER.debug("Request header: %s", headers)
-        _LOGGER.debug("Request data: %s", data)
-
-        response = requests.post(
-            endpoint,
-            headers=headers,
-            json=data,
-            timeout=30,
-        )
-        response.raise_for_status()
-        response_json = response.json()
-        _LOGGER.debug("API Response: %s", {
-            **response_json,
-            "data": {
-                **response_json.get("data", {}),
-                "audio": "[REDACTED]" if "audio" in response_json.get("data", {}) else None
+    async def async_get_tts_audio(
+        self,
+        message: str,
+        language: str,
+        options: dict[str, Any],
+    ) -> TtsAudioType:
+        """Load TTS audio file from the engine."""
+        try:
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self._api_key}"
             }
-        })
 
-        if response_json["base_resp"]["status_code"] != 0:
-            raise RuntimeError(response_json['base_resp']['status_msg'])
+            if self._voice == "custom" and self._custom_voice_id != "":
+                voice_id = self._custom_voice_id
+            elif self._voice != "custom":
+                voice_id = self._voice
+            else:
+                voice_id = list(TTS_VOICES[language].keys())[0]
+            
+            data = {
+                "text": message,
+                "model": self._model,
+                "voice_setting": {
+                    "voice_id": voice_id,
+                    "speed": self._speed,
+                    "vol": self._vol,
+                    "pitch": self._pitch,
+                },
+                "language_boost": get_language_api_value(language or self._language),
+            }
+            if self._emotion:
+                data["emotion"] = self._emotion
+            if self._english_normalization:
+                data["english_normalization"] = self._english_normalization
 
-        audio_format = response_json["extra_info"]["audio_format"]
-        audio_data = binascii.unhexlify(response_json["data"]["audio"])
-        return (audio_format, audio_data)
+            endpoint = "https://api.minimaxi.chat/v1/t2a_v2" if self._server == "international" else "https://api.minimax.chat/v1/t2a_v2"
+            _LOGGER.debug("Request endpoint: %s", endpoint)
+            _LOGGER.debug("Request header: %s", headers)
+            _LOGGER.debug("Request data: %s", data)
+
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    endpoint,
+                    headers=headers,
+                    json=data,
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as response:
+                    response.raise_for_status()
+                    response_json = await response.json()
+                    
+                    _LOGGER.debug("API Response: %s", {
+                        **response_json,
+                        "data": {
+                            **response_json.get("data", {}),
+                            "audio": "[REDACTED]" if "audio" in response_json.get("data", {}) else None
+                        }
+                    })
+
+                    if response_json["base_resp"]["status_code"] != 0:
+                        raise RuntimeError(response_json['base_resp']['status_msg'])
+
+                    audio_format = response_json["extra_info"]["audio_format"]
+                    audio_data = binascii.unhexlify(response_json["data"]["audio"])
+                    return (audio_format, audio_data)
+
+        except asyncio.CancelledError:
+            _LOGGER.debug("TTS task was cancelled")
+            raise
+        except aiohttp.ClientError as exc:
+            _LOGGER.error("Error communicating with API: %s", exc)
+            raise HomeAssistantError(f"API request failed: {exc}") from exc
+        except Exception as exc:
+            _LOGGER.error("Unexpected error during TTS generation: %s", exc)
+            raise HomeAssistantError(str(exc)) from exc
