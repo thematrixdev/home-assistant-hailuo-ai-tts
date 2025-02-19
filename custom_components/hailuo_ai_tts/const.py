@@ -23,6 +23,7 @@ CONF_CUSTOM_VOICE_NAME = "custom_voice_name"
 # Default values
 DEFAULT_LANGUAGE = "zh-HK"
 DEFAULT_SERVER = "international"
+DEFAULT_MODEL = "speech-01-turbo"
 DEFAULT_SPEED = 1.0
 DEFAULT_VOL = 1.0
 DEFAULT_PITCH = 0
@@ -30,8 +31,8 @@ DEFAULT_ENGLISH_NORMALIZATION = False
 
 # Available models
 MODELS = {
-    "speech-01-hd": "HD",
     "speech-01-turbo": "Turbo",
+    "speech-01-hd": "HD",
 }
 
 # Available emotions

@@ -1,28 +1,27 @@
 """Config flow for Hailuo AI TTS integration."""
 from __future__ import annotations
 
-import logging
+import homeassistant.helpers.config_validation as cv
 import json
-from typing import Any, Final
-from pathlib import Path
+import logging
 import voluptuous as vol
-from homeassistant.core import callback
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlow,
 )
+from homeassistant.core import callback
 from homeassistant.helpers.selector import (
     SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
 )
-import homeassistant.helpers.config_validation as cv
+from pathlib import Path
+from typing import Any
 
 from .const import (
     DOMAIN,
-    CONF_GROUP_ID,
     CONF_API_KEY,
     CONF_SERVER,
     CONF_MODEL,
@@ -33,12 +32,9 @@ from .const import (
     CONF_EMOTION,
     CONF_ENGLISH_NORMALIZATION,
     CONF_LANGUAGE,
-    CONF_MODEL_NAME,
     CONF_VOICE_NAME,
     CONF_CUSTOM_VOICE_ID,
     CONF_CUSTOM_VOICE_NAME,
-    CONF_EMOTION_NAME,
-    CONF_LANGUAGE_NAME,
     MODELS,
     EMOTIONS,
     TTS_VOICES,
@@ -49,6 +45,7 @@ from .const import (
     DEFAULT_PITCH,
     DEFAULT_ENGLISH_NORMALIZATION,
     DEFAULT_SERVER,
+    DEFAULT_MODEL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -76,7 +73,7 @@ def get_schema_step1(languages: dict, language: str, defaults: dict | None = Non
                 ]
             )
         ),
-        vol.Required(CONF_MODEL, default=defaults.get(CONF_MODEL)): SelectSelector(
+        vol.Required(CONF_MODEL, default=defaults.get(CONF_MODEL, DEFAULT_MODEL)): SelectSelector(
             SelectSelectorConfig(
                 options=[
                     SelectOptionDict(value=model_id, label=model_name)
