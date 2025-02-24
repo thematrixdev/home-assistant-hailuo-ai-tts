@@ -179,7 +179,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
             if self._english_normalization:
                 data["voice_setting"]["english_normalization"] = self._english_normalization
 
-            endpoint = "https://api.minimaxi.chat/v1/t2a_v2" if self._server == "international" else "https://api.minimaxi.chat/v1/t2a_v2"
+            endpoint = "https://api.minimaxi.chat/v1/t2a_v2" if self._server == "international" else "https://api.minimax.chat/v1/t2a_v2"
             _LOGGER.debug("Request endpoint: %s", endpoint)
             _LOGGER.debug("Request header: %s", headers)
             _LOGGER.debug("Request data: %s", data)
