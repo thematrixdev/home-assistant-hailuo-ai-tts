@@ -31,8 +31,10 @@ DEFAULT_ENGLISH_NORMALIZATION = False
 
 # Available models
 MODELS = {
-    "speech-01-turbo": "Turbo",
-    "speech-01-hd": "HD",
+    "speech-01-hd": "V1 HD",
+    "speech-01-turbo": "V1 Turbo",
+    "speech-02-hd": "V2 HD",
+    "speech-02-turbo": "V2 Turbo",
 }
 
 # Available emotions
