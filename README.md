@@ -1,4 +1,4 @@
-# Hailuo-AI TTS Home-Assistant Custom-Component
+# MINIMAX (HaiLuo) TTS Home-Assistant Custom-Component
 
 ## Prerequisite
 
