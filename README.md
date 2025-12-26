@@ -43,7 +43,8 @@ China https://platform.minimaxi.com/
   - Surprised
   - Neutral
 
-- English normalization option
+- Text normalization (Chinese/English)
+  - Improves performance in digit-reading scenarios at the cost of slightly higher latency
 
 ## Add to HACS
 

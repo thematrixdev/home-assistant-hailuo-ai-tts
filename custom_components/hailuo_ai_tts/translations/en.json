@@ -13,7 +13,7 @@
                     "pitch": "Pitch",
                     "voice": "Voice",
                     "emotion": "Emotion",
-                    "english_normalization": "English Normalization",
+                    "text_normalization": "Text Normalization",
                     "language": "Language Boost"
                 }
             }

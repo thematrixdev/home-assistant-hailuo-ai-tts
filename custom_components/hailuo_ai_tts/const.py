@@ -14,7 +14,7 @@ CONF_VOL = "vol"
 CONF_PITCH = "pitch"
 CONF_VOICE = "voice"
 CONF_EMOTION = "emotion"
-CONF_ENGLISH_NORMALIZATION = "english_normalization"
+CONF_TEXT_NORMALIZATION = "text_normalization"
 CONF_LANGUAGE = "language"
 CONF_MODEL_NAME = "model_name"
 CONF_VOICE_NAME = "voice_name"
@@ -30,7 +30,7 @@ DEFAULT_MODEL = "speech-2.6-turbo"
 DEFAULT_SPEED = 1.0
 DEFAULT_VOL = 1.0
 DEFAULT_PITCH = 0
-DEFAULT_ENGLISH_NORMALIZATION = False
+DEFAULT_TEXT_NORMALIZATION = False
 
 # Available models
 MODELS = {

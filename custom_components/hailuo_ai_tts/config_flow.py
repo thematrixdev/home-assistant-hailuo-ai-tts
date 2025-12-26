@@ -30,7 +30,7 @@ from .const import (
     CONF_PITCH,
     CONF_VOICE,
     CONF_EMOTION,
-    CONF_ENGLISH_NORMALIZATION,
+    CONF_TEXT_NORMALIZATION,
     CONF_LANGUAGE,
     CONF_VOICE_NAME,
     CONF_CUSTOM_VOICE_ID,
@@ -43,7 +43,7 @@ from .const import (
     DEFAULT_SPEED,
     DEFAULT_VOL,
     DEFAULT_PITCH,
-    DEFAULT_ENGLISH_NORMALIZATION,
+    DEFAULT_TEXT_NORMALIZATION,
     DEFAULT_SERVER,
     DEFAULT_MODEL,
 )
@@ -115,8 +115,8 @@ def get_schema_step1(languages: dict, language: str, defaults: dict | None = Non
             )
         ),
         vol.Required(
-            CONF_ENGLISH_NORMALIZATION,
-            default=defaults.get(CONF_ENGLISH_NORMALIZATION, DEFAULT_ENGLISH_NORMALIZATION)
+            CONF_TEXT_NORMALIZATION,
+            default=defaults.get(CONF_TEXT_NORMALIZATION, DEFAULT_TEXT_NORMALIZATION)
         ): cv.boolean,
     }
 

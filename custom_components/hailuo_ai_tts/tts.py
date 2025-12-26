@@ -33,7 +33,7 @@ from .const import (
     CONF_CUSTOM_VOICE_ID,
     CONF_CUSTOM_VOICE_NAME,
     CONF_EMOTION,
-    CONF_ENGLISH_NORMALIZATION,
+    CONF_TEXT_NORMALIZATION,
     CONF_LANGUAGE,
     LANGUAGE_MAPPINGS,
     MODELS,
@@ -91,7 +91,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
         self._vol = data[CONF_VOL]
         self._pitch = data[CONF_PITCH]
         self._emotion = data.get(CONF_EMOTION)
-        self._english_normalization = data[CONF_ENGLISH_NORMALIZATION]
+        self._text_normalization = data[CONF_TEXT_NORMALIZATION]
         self._language = data[CONF_LANGUAGE]
 
         language_name = get_language_display_name(self._language)
@@ -178,8 +178,8 @@ class HailuoAITTSEntity(TextToSpeechEntity):
             if self._emotion:
                 data["voice_setting"]["emotion"] = self._emotion
 
-            if self._english_normalization:
-                data["voice_setting"]["english_normalization"] = self._english_normalization
+            if self._text_normalization:
+                data["voice_setting"]["text_normalization"] = self._text_normalization
 
             endpoint = API_ENDPOINT_INTERNATIONAL if self._server == "international" else API_ENDPOINT_CHINA
             _LOGGER.debug("Request endpoint: %s", endpoint)

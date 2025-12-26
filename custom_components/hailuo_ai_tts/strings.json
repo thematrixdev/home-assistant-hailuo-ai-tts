@@ -11,7 +11,7 @@
                     "vol": "Volume",
                     "pitch": "Pitch",
                     "emotion": "Emotion",
-                    "english_normalization": "English Normalization",
+                    "text_normalization": "Text Normalization",
                     "language": "Language"
                 }
             },
@@ -48,7 +48,7 @@
                     "vol": "Volume",
                     "pitch": "Pitch",
                     "emotion": "Emotion",
-                    "english_normalization": "English Normalization",
+                    "text_normalization": "Text Normalization",
                     "language": "Language"
                 }
             },
