@@ -38,7 +38,7 @@ from .const import (
     MODELS,
     EMOTIONS,
     TTS_VOICES,
-    LANGUAGE_CODES,
+    LANGUAGE_MAPPINGS,
     DEFAULT_LANGUAGE,
     DEFAULT_SPEED,
     DEFAULT_VOL,
@@ -68,8 +68,11 @@ def get_schema_step1(languages: dict, language: str, defaults: dict | None = Non
         vol.Required(CONF_LANGUAGE, default=language): SelectSelector(
             SelectSelectorConfig(
                 options=[
-                    SelectOptionDict(value=code, label=languages.get(code, code))
-                    for code in LANGUAGE_CODES.values()
+                    SelectOptionDict(
+                        value=iso_code,
+                        label=languages.get(iso_code, display_name),
+                    )
+                    for iso_code, (_, display_name) in LANGUAGE_MAPPINGS.items()
                 ]
             )
         ),
