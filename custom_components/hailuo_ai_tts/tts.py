@@ -20,6 +20,8 @@ from typing import Any
 
 from .const import (
     DOMAIN,
+    API_ENDPOINT_INTERNATIONAL,
+    API_ENDPOINT_CHINA,
     CONF_API_KEY,
     CONF_SERVER,
     CONF_MODEL,
@@ -179,7 +181,7 @@ class HailuoAITTSEntity(TextToSpeechEntity):
             if self._english_normalization:
                 data["voice_setting"]["english_normalization"] = self._english_normalization
 
-            endpoint = "https://api.minimaxi.chat/v1/t2a_v2" if self._server == "international" else "https://api.minimax.chat/v1/t2a_v2"
+            endpoint = API_ENDPOINT_INTERNATIONAL if self._server == "international" else API_ENDPOINT_CHINA
             _LOGGER.debug("Request endpoint: %s", endpoint)
             _LOGGER.debug("Request header: %s", headers)
             _LOGGER.debug("Request data: %s", data)

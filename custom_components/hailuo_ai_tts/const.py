@@ -2,6 +2,9 @@
 
 DOMAIN = "hailuo_ai_tts"
 
+API_ENDPOINT_INTERNATIONAL = "https://api.minimax.io/v1/t2a_v2"
+API_ENDPOINT_CHINA = "https://api.minimaxi.com/v1/t2a_v2"
+
 CONF_GROUP_ID = "group_id"
 CONF_API_KEY = "api_key"
 CONF_SERVER = "server"
