@@ -40,6 +40,8 @@ MODELS = {
     "speech-02-turbo": "V2 Turbo",
     "speech-2.6-hd": "V2.6 HD",
     "speech-2.6-turbo": "V2.6 Turbo",
+    "speech-2.8-hd": "V2.8 HD",
+    "speech-2.8-turbo": "V2.8 Turbo",
 }
 
 # Available emotions
