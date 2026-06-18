@@ -44,6 +44,25 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def _strip_mp3_id3(audio_data: bytes) -> bytes:
+    """Remove leading ID3 metadata from MP3 data."""
+    while len(audio_data) >= 10 and audio_data[:3] == b"ID3":
+        size = (
+            ((audio_data[6] & 0x7F) << 21)
+            | ((audio_data[7] & 0x7F) << 14)
+            | ((audio_data[8] & 0x7F) << 7)
+            | (audio_data[9] & 0x7F)
+        )
+        offset = 10 + size
+        if audio_data[5] & 0x10:
+            offset += 10
+        if offset >= len(audio_data):
+            break
+        audio_data = audio_data[offset:]
+    return audio_data
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
@@ -209,6 +228,8 @@ class HailuoAITTSEntity(TextToSpeechEntity):
 
                     audio_format = response_json["extra_info"]["audio_format"]
                     audio_data = binascii.unhexlify(response_json["data"]["audio"])
+                    if audio_format == "mp3":
+                        audio_data = _strip_mp3_id3(audio_data)
                     return (audio_format, audio_data)
 
         except asyncio.CancelledError:
